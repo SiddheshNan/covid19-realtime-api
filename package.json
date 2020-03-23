@@ -1,0 +1,17 @@
+{
+  "name": "covid-google-scrape",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "SiddheshNan",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "mongoose": "^5.9.6",
+    "node-cron": "^2.0.3",
+    "request": "^2.88.2"
+  }
+}
