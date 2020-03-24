@@ -28,7 +28,7 @@ const URL = "https://google.org/crisisresponse/covid19-map";
 
 cron.schedule("*/30 * * * *", async function() {
   console.log("\n----- Running Cron Job -----");
-  //await doCron();
+  await doCron();
   console.log("----- Cron Job Finished -----");
 });
 
@@ -44,13 +44,17 @@ function doGet(url) {
   });
 }
 
-const doThing = async () => {
+let currentData = {
+  epoch: null,
+  datetime: "",
+  countries: []
+};
+
+const doCron = async () => {
   try {
-    let currentData = {
-      epoch: new Date().getTime(),
-      datetime: new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }).toString() + " IST",
-      countries: []
-    };
+    console.log("----- Starting JOB -----");
+    console.log(new Date().toLocaleString() + "\n");
+
     const htmlData = await doGet(URL);
 
     const $ = cheerio.load(htmlData);
@@ -67,18 +71,76 @@ const doThing = async () => {
             recovered: data[3][index]
           }
         };
-
+        currentData.epoch = new Date().getTime();
+        currentData.datetime =
+          new Date()
+            .toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
+            .toString() + " IST";
         currentData.countries.push(county);
       }
     }
 
-    console.log(JSON.stringify(currentData));
+    let entry = new Covid({
+      epoch: new Date().getTime(),
+      data: JSON.parse(JSON.stringify(currentData))
+    });
+    try {
+      await entry.save({ checkKeys: false });
+      console.log("added to DB");
+    } catch (err) {
+      console.log("failed to add to DB ", err);
+    }
+
+    console.log("\n----- Ending JOB -----");
+
+    //console.log(JSON.stringify(currentData));
   } catch (error) {
     console.error(error);
   }
 };
 
+app.get("/", (req, res) => {
+  res.json(currentData);
+});
+
+app.get("/epoch", async (req, res) => {
+  let data = [];
+  let epo;
+  try {
+    epo = await Covid.find();
+    epo.forEach(element => {
+      data.push(element.epoch);
+    });
+
+    res.json({ epoch: data });
+  } catch (error) {
+    res.send(error).status(500);
+  }
+});
+
+app.get("/epoch/:epo", async (req, res) => {
+  const epo = req.params.epo;
+  let data;
+  try {
+    data = await Covid.findOne({
+      epoch: req.params.epo
+    });
+
+    if (data == null) {
+      res
+        .json({
+          error: "epoch not found"
+        })
+        .status(404);
+    } else {
+      res.json(data);
+    }
+  } catch (error) {
+    res.send("error" + error).status(500);
+  }
+});
 
 app.listen(5000, async () => {
-  console.log(`listening`), await doThing();
+  console.log(`listening`);
+  await doCron();
 });
