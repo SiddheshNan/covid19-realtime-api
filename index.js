@@ -26,14 +26,6 @@ let Covid = mongoose.model("covids", covidSchema);
 
 const URL = "https://google.org/crisisresponse/covid19-map";
 
-let currentData = {
-  datetime: "",
-  epoch: "",
-  "worldwide-cases": "",
-  "worldwide-deaths": "",
-  countries: []
-};
-
 cron.schedule("*/30 * * * *", async function() {
   console.log("\n----- Running Cron Job -----");
   //await doCron();
@@ -55,6 +47,8 @@ function doGet(url) {
 const doThing = async () => {
   try {
     let currentData = {
+      epoch: new Date().getTime(),
+      datetime: new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }).toString() + " IST",
       countries: []
     };
     const htmlData = await doGet(URL);
@@ -67,12 +61,11 @@ const doThing = async () => {
     for (index in data[0]) {
       if (index != 0) {
         let county = {
-            [data[0][index]] : {
-                "cases": [data[1][index]],
-                "deaths":[data[4][index]],
-                "recovered": [data[3][index]]
-
-            },
+          [data[0][index]]: {
+            cases: data[1][index],
+            deaths: data[4][index],
+            recovered: data[3][index]
+          }
         };
 
         currentData.countries.push(county);
@@ -85,7 +78,6 @@ const doThing = async () => {
   }
 };
 
-console.log(new Date().toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
 
 app.listen(5000, async () => {
   console.log(`listening`), await doThing();
