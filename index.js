@@ -50,6 +50,9 @@ let currentData = {
   countries: []
 };
 
+let espData = {
+  countries: []
+};
 const doCron = async () => {
   try {
     console.log("----- Starting JOB -----");
@@ -77,6 +80,27 @@ const doCron = async () => {
             .toLocaleString("en-US", { timeZone: "Asia/Kolkata" })
             .toString() + " IST";
         currentData.countries.push(county);
+        if (county.hasOwnProperty("Worldwide")) {
+          espData.countries.push(county);
+        }
+        if (county.hasOwnProperty("China")) {
+          espData.countries.push(county);
+        }
+        if (county.hasOwnProperty("Italy")) {
+          espData.countries.push(county);
+        }
+        if (county.hasOwnProperty("United States")) {
+          espData.countries.push(county);
+        }
+        if (county.hasOwnProperty("Spain")) {
+          espData.countries.push(county);
+        }
+        if (county.hasOwnProperty("Germany")) {
+          espData.countries.push(county);
+        }
+        if (county.hasOwnProperty("India")) {
+          espData.countries.push(county);
+        }
       }
     }
 
@@ -101,6 +125,10 @@ const doCron = async () => {
 
 app.get("/", (req, res) => {
   res.json(currentData);
+});
+
+app.get("/esp", (req, res) => {
+  res.json(espData);
 });
 
 app.get("/epoch", async (req, res) => {
